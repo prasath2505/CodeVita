@@ -1,0 +1,67 @@
+#include <stdio.h>
+#include <string.h>
+#include <limits.h>
+
+#define MAX_LEN 10001
+
+// Function to find the minimum String Factor
+int minStringFactor(char X[], char Y[], int S, int R) {
+    int x_len = strlen(X);
+    int y_len = strlen(Y);
+
+    // dp[i] will store minimum String Factor required to form X[0:i]
+    int dp[MAX_LEN];
+    for (int i = 0; i <= x_len; i++) {
+        dp[i] = INT_MAX;
+    }
+    dp[0] = 0; // base case
+
+    // Reverse of string Y
+    char Y_rev[MAX_LEN];
+    for (int i = 0; i < y_len; i++) {
+        Y_rev[i] = Y[y_len - i - 1];
+    }
+    Y_rev[y_len] = '\0';
+
+    // DP approach to form X from Y and Y reversed
+    for (int i = 0; i < x_len; i++) {
+        if (dp[i] == INT_MAX) continue; // skip impossible cases
+
+        // Try all possible substrings of Y and Y_rev
+        for (int j = 1; j <= y_len && i + j <= x_len; j++) {
+            if (strncmp(X + i, Y, j) == 0) { // Check substring in Y
+                if (dp[i + j] > dp[i] + S) {
+                    dp[i + j] = dp[i] + S;
+                }
+            }
+            if (strncmp(X + i, Y_rev, j) == 0) { // Check substring in Y_rev
+                if (dp[i + j] > dp[i] + R) {
+                    dp[i + j] = dp[i] + R;
+                }
+            }
+        }
+    }
+
+    return dp[x_len] == INT_MAX ? -1 : dp[x_len];
+}
+
+int main() {
+    char X[MAX_LEN], Y[MAX_LEN];
+    int S, R;
+
+    // Input the strings and costs
+    scanf("%s", X);
+    scanf("%s", Y);
+    scanf("%d %d", &S, &R);
+
+    // Calculate minimum String Factor
+    int result = minStringFactor(X, Y, S, R);
+
+    if (result == -1) {
+        printf("Impossible\n");
+    } else {
+        printf("%d\n", result);
+    }
+
+    return 0;
+}
