@@ -1,0 +1,55 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#define MAX_EMPLOYEES 1000
+
+int expertise[MAX_EMPLOYEES + 1];       // Expertise level for each employee
+int adj[MAX_EMPLOYEES + 1][MAX_EMPLOYEES + 1]; // Adjacency matrix for conflicts
+int visited[MAX_EMPLOYEES + 1];         // Visited array for DFS
+
+// DFS function to explore each connected component and calculate its expertise sum
+int dfs(int employee, int n) {
+    visited[employee] = 1;
+    int sum = expertise[employee - 1]; // Adjusting for zero-based indexing of expertise array
+    
+    for (int i = 1; i <= n; i++) {
+        if (adj[employee][i] && !visited[i]) {
+            sum += dfs(i, n);
+        }
+    }
+    return sum;
+}
+
+int main() {
+    int n, c;
+    scanf("%d %d", &n, &c);
+
+    // Read the conflict pairs and fill the adjacency matrix
+    for (int i = 0; i < c; i++) {
+        int u, v;
+        scanf("%d %d", &u, &v);
+        adj[u][v] = 1;
+        adj[v][u] = 1;
+    }
+
+    // Read expertise values
+    for (int i = 0; i < n; i++) {
+        scanf("%d", &expertise[i]);
+    }
+
+    int maxExpertise = 0;
+
+    // Process each unvisited employee (node)
+    for (int i = 1; i <= n; i++) {
+        if (!visited[i]) {
+            int expertiseSum = dfs(i, n);
+            if (expertiseSum > maxExpertise) {
+                maxExpertise = expertiseSum;
+            }
+        }
+    }
+
+    printf("%d\n", maxExpertise);
+    return 0;
+}
