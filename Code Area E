@@ -1,0 +1,48 @@
+import numpy as np
+from scipy.optimize import minimize_scalar
+
+def surface_function(x, A, B):
+    y = sum(np.sin(i * x + b) for i, b in zip(A, B))
+    return y
+
+def find_peaks_and_valleys(A, B, step=0.01):
+    x_values = np.arange(0, 2 * np.pi, step)
+    y_values = [surface_function(x, A, B) for x in x_values]
+
+    peaks = []
+    valleys = []
+    
+    for i in range(1, len(x_values) - 1):
+        if y_values[i - 1] < y_values[i] > y_values[i + 1]:  # Local maximum
+            peaks.append(x_values[i])
+        elif y_values[i - 1] > y_values[i] < y_values[i + 1]:  # Local minimum
+            valleys.append(x_values[i])
+
+    return peaks, valleys
+
+def widest_valley(peaks):
+    max_width = 0
+    valley_index = 0
+    for i in range(1, len(peaks)):
+        width = peaks[i] - peaks[i - 1]
+        if width > max_width:
+            max_width = width
+            valley_index = i
+    return valley_index
+
+def main():
+    n = int(input().strip())
+    A = list(map(int, input().strip().split()))
+    B = list(map(int, input().strip().split()))
+
+    peaks, _ = find_peaks_and_valleys(A, B)
+    
+    if len(peaks) < 2:
+        print("No valleys detected")
+        return
+
+    valley_index = widest_valley(peaks) + 1
+    print(valley_index)
+
+if __name__ == "__main__":
+    main()
