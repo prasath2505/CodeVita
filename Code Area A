@@ -1,0 +1,99 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdbool.h>
+
+#define MAX 50
+
+typedef struct {
+    int x, y, moves;
+} Cell;
+
+typedef struct {
+    Cell data[MAX * MAX];
+    int front, rear;
+} Queue;
+
+void initQueue(Queue* q) {
+    q->front = q->rear = -1;
+}
+
+bool isEmpty(Queue* q) {
+    return q->front == -1;
+}
+
+void enqueue(Queue* q, Cell c) {
+    if (q->rear == MAX * MAX - 1) return;
+    if (isEmpty(q)) q->front = 0;
+    q->rear++;
+    q->data[q->rear] = c;
+}
+
+Cell dequeue(Queue* q) {
+    Cell c = q->data[q->front];
+    if (q->front == q->rear) {
+        q->front = q->rear = -1;
+    } else {
+        q->front++;
+    }
+    return c;
+}
+
+bool isValid(int x, int y, int M, int N, int grid[MAX][MAX]) {
+    return (x >= 0 && x < M && y >= 0 && y < N && grid[x][y] == 0);
+}
+
+int bfs(int M, int N, int grid[MAX][MAX], int sx, int sy, int dx, int dy, int mx, int my) {
+    int visited[MAX][MAX] = {0};
+    Queue q;
+    initQueue(&q);
+    enqueue(&q, (Cell){sx, sy, 0});
+    visited[sx][sy] = 1;
+
+    int directions[4][2] = {
+        {mx, my},         // forward
+        {my, -mx},        // right
+        {-my, mx},        // left
+        {-mx, -my}        // backward
+    };
+
+    while (!isEmpty(&q)) {
+        Cell current = dequeue(&q);
+        
+        if (current.x == dx && current.y == dy) {
+            return current.moves;
+        }
+
+        for (int i = 0; i < 4; i++) {
+            int nx = current.x + directions[i][0];
+            int ny = current.y + directions[i][1];
+
+            if (isValid(nx, ny, M, N, grid) && !visited[nx][ny]) {
+                visited[nx][ny] = 1;
+                enqueue(&q, (Cell){nx, ny, current.moves + 1});
+            }
+        }
+    }
+    return -1;
+}
+
+int main() {
+    int M, N;
+    scanf("%d %d", &M, &N);
+
+    int grid[MAX][MAX];
+    for (int i = 0; i < M; i++) {
+        for (int j = 0; j < N; j++) {
+            scanf("%d", &grid[i][j]);
+        }
+    }
+
+    int sx, sy, dx, dy, mx, my;
+    scanf("%d %d", &sx, &sy);
+    scanf("%d %d", &dx, &dy);
+    scanf("%d %d", &mx, &my);
+
+    int result = bfs(M, N, grid, sx, sy, dx, dy, mx, my);
+    printf("%d\n", result);
+
+    return 0;
+}
