@@ -1,0 +1,117 @@
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include <stdbool.h>
+
+// Helper function to convert word to digit
+int wordToDigit(char* word) {
+    if (strcmp(word, "zero") == 0) return 0;
+    if (strcmp(word, "one") == 0) return 1;
+    if (strcmp(word, "two") == 0) return 2;
+    if (strcmp(word, "three") == 0) return 3;
+    if (strcmp(word, "four") == 0) return 4;
+    if (strcmp(word, "five") == 0) return 5;
+    if (strcmp(word, "six") == 0) return 6;
+    if (strcmp(word, "seven") == 0) return 7;
+    if (strcmp(word, "eight") == 0) return 8;
+    if (strcmp(word, "nine") == 0) return 9;
+    return -1;
+}
+
+// Convert words like "onectwoczero" to integer
+int convertWordsToNumber(char* word) {
+    int num = 0;
+    int len = strlen(word);
+    char buffer[10];
+    int bufIndex = 0;
+    
+    for (int i = 0; i <= len; i++) {
+        if (word[i] == 'c' || word[i] == '\0') {
+            buffer[bufIndex] = '\0';
+            int digit = wordToDigit(buffer);
+            if (digit == -1) return -1; // Invalid word
+            num = num * 10 + digit;
+            bufIndex = 0;
+        } else {
+            buffer[bufIndex++] = word[i];
+        }
+    }
+    return num;
+}
+
+// Evaluate a single operation
+int evaluateOperation(char* op, int operand1, int operand2) {
+    if (strcmp(op, "add") == 0) return operand1 + operand2;
+    if (strcmp(op, "sub") == 0) return operand1 - operand2;
+    if (strcmp(op, "mul") == 0) return operand1 * operand2;
+    if (strcmp(op, "div") == 0) return operand2 != 0 ? operand1 / operand2 : 0;
+    if (strcmp(op, "rem") == 0) return operand1 % operand2;
+    if (strcmp(op, "pow") == 0) {
+        int result = 1;
+        for (int i = 0; i < operand2; i++) result *= operand1;
+        return result;
+    }
+    return 0; // Invalid operation
+}
+
+// Process the expression
+void processExpression(char* expression) {
+    char* tokens[100];
+    int tokenCount = 0;
+    
+    char* token = strtok(expression, " ");
+    while (token != NULL) {
+        tokens[tokenCount++] = token;
+        token = strtok(NULL, " ");
+    }
+
+    int stack[100];
+    int stackTop = -1;
+    char* operations[10];
+    int operationCount = 0;
+
+    // Parse tokens and categorize them
+    for (int i = 0; i < tokenCount; i++) {
+        int number = convertWordsToNumber(tokens[i]);
+        if (number != -1) {
+            stack[++stackTop] = number;
+        } else if (strcmp(tokens[i], "add") == 0 || strcmp(tokens[i], "sub") == 0 ||
+                   strcmp(tokens[i], "mul") == 0 || strcmp(tokens[i], "div") == 0 ||
+                   strcmp(tokens[i], "rem") == 0 || strcmp(tokens[i], "pow") == 0) {
+            operations[operationCount++] = tokens[i];
+        } else {
+            printf("expression evaluation stopped invalid words present\n");
+            return;
+        }
+    }
+
+    // Check if there are insufficient operands for the operations
+    if (stackTop < operationCount || operationCount == 0) {
+        printf("expression is not complete or invalid\n");
+        return;
+    }
+
+    // Evaluate the operations based on Prabhu's rules
+    int result = stack[0];
+    int operandIndex = 1;
+
+    for (int i = 0; i < operationCount; i++) {
+        if (operandIndex > stackTop) {
+            printf("expression is not complete or invalid\n");
+            return;
+        }
+        result = evaluateOperation(operations[i], result, stack[operandIndex++]);
+    }
+
+    printf("%d\n", result);
+}
+
+int main() {
+    char expression[100];
+    fgets(expression, sizeof(expression), stdin);
+    expression[strcspn(expression, "\n")] = '\0'; // Remove newline character
+
+    processExpression(expression);
+
+    return 0;
+}
